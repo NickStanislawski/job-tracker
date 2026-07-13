@@ -183,7 +183,15 @@ export const CSS: string = `
 .jst-picker-role { font-size: 13.5px; font-weight: 500; color: var(--ink); }
 .jst-picker-company { font-size: 12px; color: var(--ink-soft); }
 
-.jst-tabbar { display: none; }
+.jst-hamburger-btn { display: none; background: transparent; border: none; color: var(--ink); cursor: pointer; padding: 8px; border-radius: 8px; align-items: center; justify-content: center; }
+.jst-hamburger-btn:hover { background: var(--bg); }
+.jst-mobile-menu-backdrop { position: fixed; inset: 0; background: rgba(20,24,20,0.35); z-index: 45; }
+.jst-mobile-menu { position: relative; z-index: 46; display: flex; flex-direction: column; gap: 2px; background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: 0 12px 24px rgba(0,0,0,0.08); padding: 8px; }
+.jst-mobile-menu-btn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; border: none; background: transparent; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 500; color: var(--ink); cursor: pointer; }
+.jst-mobile-menu-btn:hover { background: var(--bg); }
+.jst-mobile-menu-active { background: var(--ink) !important; color: #fff !important; }
+.jst-mobile-menu-divider { height: 1px; background: var(--line); margin: 6px 6px; }
+.jst-mobile-menu-email { font-size: 12.5px; color: var(--ink-soft); padding: 4px 14px 6px; }
 
 /* ---------------------------------------------------------------------
    MOBILE — tablet and below
@@ -191,24 +199,10 @@ export const CSS: string = `
 @media (max-width: 720px) {
   .jst-header { flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 16px; gap: 10px; }
   .jst-nav { display: none; }
-  .jst-account { width: auto; margin-left: 0; }
-  .jst-account-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40vw; }
+  .jst-account { display: none; }
+  .jst-hamburger-btn { display: flex; }
 
-  /* Fixed bottom tab bar replaces the header nav on mobile */
-  .jst-tabbar {
-    display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
-    background: var(--surface); border-top: 1px solid var(--line);
-    padding: 6px 2px calc(6px + env(safe-area-inset-bottom));
-    box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
-  }
-  .jst-tabbar-btn {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-    background: none; border: none; color: var(--ink-soft); padding: 6px 2px; border-radius: 10px;
-    font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; cursor: pointer;
-  }
-  .jst-tabbar-btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-  .jst-tabbar-active { color: var(--ink); }
-  .jst-main { padding: 16px; padding-bottom: 84px; }
+  .jst-main { padding: 16px; }
   .jst-hero { padding: 16px 16px 14px; }
   .jst-hero-text .jst-eyebrow { display: none; }
   .jst-hero-text h2 { font-size: 16px; margin: 0 0 12px; line-height: 1.25; }
@@ -282,6 +276,5 @@ export const CSS: string = `
   .jst-brand h1 { font-size: 21px; }
   .jst-hero-text h2 { font-size: 19px; }
   .jst-metric-num { font-size: 22px; }
-  .jst-account-email { display: none; }
 }
 `;

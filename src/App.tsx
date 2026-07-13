@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   Plus, X, Search, Building2, User, Briefcase, Calendar, Trash2, Pencil,
   ChevronRight, LayoutDashboard, ListChecks, Users2, AlertCircle, Sparkles,
-  CheckCircle2, ClipboardEdit, Mail, Inbox, LogOut,
+  CheckCircle2, ClipboardEdit, Mail, Inbox, LogOut, Menu,
 } from "lucide-react";
 import type {
   Stage, StageKey, Priority, TaskKind, TaskItem,
@@ -1517,6 +1517,7 @@ function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string |
   const [filterStage, setFilterStage] = useState<StageKey | "">("");
   const [urgencyFilter, setUrgencyFilter] = useState("");
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const goToApplications = (stage?: StageKey | "", urgency?: string) => {
     setFilterStage(stage || "");
@@ -1525,6 +1526,7 @@ function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string |
   };
   const goToTasks = () => setTab("tasks");
   const openApplication = (id: string) => { setFocusId(id); setTab("applications"); };
+  const selectTab = (t: TabKey) => { setTab(t); setMobileMenuOpen(false); };
 
   return (
     <div className="jst-app">
@@ -1535,17 +1537,41 @@ function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string |
           <h1>Command Center</h1>
         </div>
         <nav className="jst-nav">
-          <button className={"jst-nav-btn" + (tab === "dashboard" ? " jst-nav-active" : "")} onClick={() => setTab("dashboard")}><LayoutDashboard size={16} /> Dashboard</button>
-          <button className={"jst-nav-btn" + (tab === "tasks" ? " jst-nav-active" : "")} onClick={() => setTab("tasks")}><Inbox size={16} /> Tasks</button>
-          <button className={"jst-nav-btn" + (tab === "applications" ? " jst-nav-active" : "")} onClick={() => setTab("applications")}><ListChecks size={16} /> Applications</button>
-          <button className={"jst-nav-btn" + (tab === "companies" ? " jst-nav-active" : "")} onClick={() => setTab("companies")}><Building2 size={16} /> Companies</button>
-          <button className={"jst-nav-btn" + (tab === "recruiters" ? " jst-nav-active" : "")} onClick={() => setTab("recruiters")}><Users2 size={16} /> Recruiters</button>
+          <button className={"jst-nav-btn" + (tab === "dashboard" ? " jst-nav-active" : "")} onClick={() => selectTab("dashboard")}><LayoutDashboard size={16} /> Dashboard</button>
+          <button className={"jst-nav-btn" + (tab === "tasks" ? " jst-nav-active" : "")} onClick={() => selectTab("tasks")}><Inbox size={16} /> Tasks</button>
+          <button className={"jst-nav-btn" + (tab === "applications" ? " jst-nav-active" : "")} onClick={() => selectTab("applications")}><ListChecks size={16} /> Applications</button>
+          <button className={"jst-nav-btn" + (tab === "companies" ? " jst-nav-active" : "")} onClick={() => selectTab("companies")}><Building2 size={16} /> Companies</button>
+          <button className={"jst-nav-btn" + (tab === "recruiters" ? " jst-nav-active" : "")} onClick={() => selectTab("recruiters")}><Users2 size={16} /> Recruiters</button>
         </nav>
         <div className="jst-account">
           {userEmail && <span className="jst-account-email">{userEmail}</span>}
           <button className="jst-nav-btn jst-signout-btn" onClick={() => signOutUser()}><LogOut size={15} /> Sign out</button>
         </div>
+        <button
+          className="jst-hamburger-btn"
+          onClick={() => setMobileMenuOpen((o) => !o)}
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileMenuOpen}
+        >
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
       </header>
+
+      {mobileMenuOpen && (
+        <>
+          <div className="jst-mobile-menu-backdrop" onClick={() => setMobileMenuOpen(false)} />
+          <nav className="jst-mobile-menu">
+            <button className={"jst-mobile-menu-btn" + (tab === "dashboard" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("dashboard")}><LayoutDashboard size={18} /> Dashboard</button>
+            <button className={"jst-mobile-menu-btn" + (tab === "tasks" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("tasks")}><Inbox size={18} /> Tasks</button>
+            <button className={"jst-mobile-menu-btn" + (tab === "applications" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("applications")}><ListChecks size={18} /> Applications</button>
+            <button className={"jst-mobile-menu-btn" + (tab === "companies" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("companies")}><Building2 size={18} /> Companies</button>
+            <button className={"jst-mobile-menu-btn" + (tab === "recruiters" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("recruiters")}><Users2 size={18} /> Recruiters</button>
+            <div className="jst-mobile-menu-divider" />
+            {userEmail && <span className="jst-mobile-menu-email">{userEmail}</span>}
+            <button className="jst-mobile-menu-btn" onClick={() => signOutUser()}><LogOut size={17} /> Sign out</button>
+          </nav>
+        </>
+      )}
 
       <main className="jst-main">
         {status === "loading" || !data ? (
@@ -1567,14 +1593,6 @@ function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string |
           <RecruitersView recruiters={data.recruiters} applications={data.applications} companies={data.companies} setData={setData} openApplication={openApplication} />
         )}
       </main>
-
-      <nav className="jst-tabbar">
-        <button className={"jst-tabbar-btn" + (tab === "dashboard" ? " jst-tabbar-active" : "")} onClick={() => setTab("dashboard")}><LayoutDashboard size={19} /><span>Dashboard</span></button>
-        <button className={"jst-tabbar-btn" + (tab === "tasks" ? " jst-tabbar-active" : "")} onClick={() => setTab("tasks")}><Inbox size={19} /><span>Tasks</span></button>
-        <button className={"jst-tabbar-btn" + (tab === "applications" ? " jst-tabbar-active" : "")} onClick={() => setTab("applications")}><ListChecks size={19} /><span>Applications</span></button>
-        <button className={"jst-tabbar-btn" + (tab === "companies" ? " jst-tabbar-active" : "")} onClick={() => setTab("companies")}><Building2 size={19} /><span>Companies</span></button>
-        <button className={"jst-tabbar-btn" + (tab === "recruiters" ? " jst-tabbar-active" : "")} onClick={() => setTab("recruiters")}><Users2 size={19} /><span>Recruiters</span></button>
-      </nav>
     </div>
   );
 }
