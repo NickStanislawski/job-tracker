@@ -182,4 +182,104 @@ export const CSS: string = `
 .jst-picker-text { display: flex; flex-direction: column; min-width: 0; }
 .jst-picker-role { font-size: 13.5px; font-weight: 500; color: var(--ink); }
 .jst-picker-company { font-size: 12px; color: var(--ink-soft); }
+
+/* ---------------------------------------------------------------------
+   MOBILE — tablet and below
+--------------------------------------------------------------------- */
+@media (max-width: 720px) {
+  .jst-header { flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 16px; gap: 10px; }
+  .jst-nav { display: none; }
+  .jst-account { width: auto; margin-left: 0; }
+  .jst-account-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40vw; }
+
+  /* Fixed bottom tab bar replaces the header nav on mobile */
+  .jst-tabbar {
+    display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: 6px 2px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
+  }
+  .jst-tabbar-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: none; border: none; color: var(--ink-soft); padding: 6px 2px; border-radius: 10px;
+    font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; cursor: pointer;
+  }
+  .jst-tabbar-btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .jst-tabbar-active { color: var(--ink); }
+  .jst-main { padding: 16px; padding-bottom: 84px; }
+  .jst-hero { padding: 16px 16px 14px; }
+  .jst-hero-text .jst-eyebrow { display: none; }
+  .jst-hero-text h2 { font-size: 16px; margin: 0 0 12px; line-height: 1.25; }
+  .jst-card { padding: 18px 16px; }
+
+  /* Pipeline rail becomes a compact row of chips instead of a horizontal scroller */
+  .jst-rail-wrap { overflow: visible; padding-bottom: 0; }
+  .jst-rail { flex-direction: row; flex-wrap: wrap; min-width: 0; gap: 6px; padding-top: 0; }
+  .jst-station {
+    flex: none; flex-direction: row; align-items: center; gap: 6px;
+    width: auto; padding: 6px 10px; border-radius: 999px; background: var(--bg);
+  }
+  .jst-station-stem { display: none; }
+  .jst-station-dot { order: 1; margin-top: 0; flex-shrink: 0; width: 8px; height: 8px; }
+  .jst-station-label { order: 2; text-align: left; font-size: 11px; }
+  .jst-station-count { order: 3; font-size: 12.5px; }
+
+  .jst-toolbar { flex-direction: column; align-items: stretch; }
+  .jst-toolbar-title { flex: none; }
+  .jst-search, .jst-toolbar select, .jst-toolbar > button.jst-btn-primary { width: 100%; }
+
+  .jst-form { grid-template-columns: 1fr; }
+
+  /* Modals become bottom sheets, easier to reach with a thumb */
+  .jst-modal-backdrop { padding: 0; align-items: flex-end; }
+  .jst-modal { max-width: 100%; width: 100%; max-height: 90vh; border-radius: 18px 18px 0 0; }
+
+  .jst-entity-head { padding: 14px; gap: 10px; }
+  .jst-entity-stats { flex-wrap: wrap; row-gap: 4px; }
+  .jst-entity-body { padding: 4px 16px 16px; }
+
+  /* Tables collapse into stacked cards instead of a grid */
+  .jst-table { background: transparent; border: none; border-radius: 0; overflow: visible; }
+  .jst-table-head { display: none; }
+  .jst-table-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--line) !important;
+    border-top: 1px solid var(--line) !important;
+    border-left: 3px solid transparent;
+    border-radius: 12px;
+    padding: 14px 44px 14px 16px;
+    margin-bottom: 8px;
+  }
+  .jst-row-overdue { border-left-color: #C1584A; }
+  .jst-table-row > span[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+  .jst-table-row > .jst-row-actions { position: absolute; top: 12px; right: 10px; }
+
+  .jst-entity-head { flex-wrap: wrap; }
+  .jst-entity-head > .jst-row-actions { order: 1; margin-left: auto; }
+
+  .jst-task-row { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .jst-task-row > span:not(.jst-task-kind-icon):not(.jst-row-role) { width: 100%; }
+}
+
+/* ---------------------------------------------------------------------
+   MOBILE — phones
+--------------------------------------------------------------------- */
+@media (max-width: 420px) {
+  .jst-brand h1 { font-size: 21px; }
+  .jst-hero-text h2 { font-size: 19px; }
+  .jst-metric-num { font-size: 22px; }
+  .jst-account-email { display: none; }
+}
 `;

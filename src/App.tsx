@@ -138,20 +138,10 @@ const daysUntil = (d: string | null | undefined): number => {
    SEED DATA — mirrors the uploaded tracker so the app opens populated.
 --------------------------------------------------------------------- */
 const seedCompanies = (): Company[] => [
-  { id: "c1", name: "Brightline Analytics", industry: "Data / Analytics", notes: "" },
-  { id: "c2", name: "Northbridge Health", industry: "Healthcare", notes: "" },
-  { id: "c3", name: "Cascade Robotics", industry: "Robotics / Hardware", notes: "" },
-  { id: "c4", name: "TerraForm Energy", industry: "Energy", notes: "" },
 ];
 const seedRecruiters = (): Recruiter[] => [
-  { id: "r1", name: "Dana Kim", email: "dana.kim@cascaderobotics.com", agency: "Cascade Robotics (internal)", relationship: "Warm intro via Frank Lee", notes: "" },
-  { id: "r2", name: "Marcus Webb", email: "", agency: "TerraForm Energy (internal)", relationship: "Cold outreach", notes: "" },
 ];
 const seedApplications = (): Application[] => [
-  { id: "a1", companyId: "c1", recruiterId: "", role: "Security Engineer", source: "LinkedIn", appliedDate: "2026-06-20", lastContactDate: "2026-06-20", status: "Applied", nextAction: "Wait for recruiter response", nextFollowUpDate: "2026-07-07", thankYouDueDate: "", salaryRange: "$110k–$130k", priority: "High", jobUrl: "", notes: "" },
-  { id: "a2", companyId: "c2", recruiterId: "", role: "Data Analyst", source: "Job Board", appliedDate: "", lastContactDate: "2026-06-12", status: "Not Applied", nextAction: "Decide whether to apply", nextFollowUpDate: "", thankYouDueDate: "", salaryRange: "$85k–$100k", priority: "Medium", jobUrl: "", notes: "" },
-  { id: "a3", companyId: "c3", recruiterId: "r1", role: "Software Engineer", source: "Referral", appliedDate: "2026-06-07", lastContactDate: "2026-06-24", status: "Recruiter Screen", nextAction: "Prep for screen call", nextFollowUpDate: "2026-07-05", thankYouDueDate: "", salaryRange: "$120k–$140k", priority: "High", jobUrl: "", notes: "Referred by Frank Lee" },
-  { id: "a4", companyId: "c4", recruiterId: "r2", role: "Business Analyst", source: "Company Website", appliedDate: "2026-05-23", lastContactDate: "2026-06-17", status: "Rejected", nextAction: "", nextFollowUpDate: "", thankYouDueDate: "", salaryRange: "", priority: "Medium", jobUrl: "", notes: "Went with internal candidate" },
 ];
 
 const makeSeedData = (): AppData => ({
@@ -229,7 +219,7 @@ function PipelineRail({
       <div className="jst-rail">
         {STAGES.map((s, i) => (
           <button key={s.key} className="jst-station" onClick={() => onStationClick(s.key)}>
-            <div className="jst-station-stem" style={{ height: 8 + (counts[i] / max) * 40 }}>
+            <div className="jst-station-stem" style={{ height: 8 + (counts[i] / max) * 40, "--mag": counts[i] / max } as React.CSSProperties}>
               <div className="jst-station-fill" style={{ background: s.color }} />
             </div>
             <div className="jst-station-dot" style={{ borderColor: s.color, background: counts[i] ? s.color : "#fff" }} />
@@ -977,9 +967,9 @@ function TasksView({
                       <PriorityDot priority={t.app.priority} />
                       {t.app.role}
                     </span>
-                    <span className="jst-muted">{companyName(t.app.companyId)}</span>
-                    <span className="jst-muted jst-task-label">{t.label}</span>
-                    <span className={"jst-muted jst-mono" + (isOverdue ? " jst-overdue-text" : "")}>
+                    <span data-label="Company" className="jst-muted">{companyName(t.app.companyId)}</span>
+                    <span data-label="Note" className="jst-muted jst-task-label">{t.label}</span>
+                    <span data-label="Due" className={"jst-muted jst-mono" + (isOverdue ? " jst-overdue-text" : "")}>
                       {isOverdue ? `${Math.abs(d)}d overdue` : d === 0 ? "Today" : fmtDate(t.date)}
                     </span>
                     <span className="jst-row-actions" onClick={(e) => e.stopPropagation()}>
@@ -1183,10 +1173,10 @@ function ApplicationsView({
                     </button>
                   )}
                 </span>
-                <span>{companyName(a.companyId)}</span>
-                <span><StagePill stage={a.status} /></span>
-                <span className="jst-muted">{recruiterName(a.recruiterId) || "—"}</span>
-                <span className={"jst-muted jst-mono" + (isOverdue ? " jst-overdue-text" : isSoon ? " jst-soon-text" : "")}>
+                <span data-label="Company">{companyName(a.companyId)}</span>
+                <span data-label="Stage"><StagePill stage={a.status} /></span>
+                <span data-label="Recruiter" className="jst-muted">{recruiterName(a.recruiterId) || "—"}</span>
+                <span data-label="Next follow-up" className={"jst-muted jst-mono" + (isOverdue ? " jst-overdue-text" : isSoon ? " jst-soon-text" : "")}>
                   {a.nextFollowUpDate ? (isOverdue ? `${Math.abs(d as number)}d overdue` : d === 0 ? "Today" : `${fmtDate(a.nextFollowUpDate)}`) : "—"}
                 </span>
                 <span className="jst-row-actions" onClick={(e) => e.stopPropagation()}>
@@ -1577,6 +1567,14 @@ function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string |
           <RecruitersView recruiters={data.recruiters} applications={data.applications} companies={data.companies} setData={setData} openApplication={openApplication} />
         )}
       </main>
+
+      <nav className="jst-tabbar">
+        <button className={"jst-tabbar-btn" + (tab === "dashboard" ? " jst-tabbar-active" : "")} onClick={() => setTab("dashboard")}><LayoutDashboard size={19} /><span>Dashboard</span></button>
+        <button className={"jst-tabbar-btn" + (tab === "tasks" ? " jst-tabbar-active" : "")} onClick={() => setTab("tasks")}><Inbox size={19} /><span>Tasks</span></button>
+        <button className={"jst-tabbar-btn" + (tab === "applications" ? " jst-tabbar-active" : "")} onClick={() => setTab("applications")}><ListChecks size={19} /><span>Applications</span></button>
+        <button className={"jst-tabbar-btn" + (tab === "companies" ? " jst-tabbar-active" : "")} onClick={() => setTab("companies")}><Building2 size={19} /><span>Companies</span></button>
+        <button className={"jst-tabbar-btn" + (tab === "recruiters" ? " jst-tabbar-active" : "")} onClick={() => setTab("recruiters")}><Users2 size={19} /><span>Recruiters</span></button>
+      </nav>
     </div>
   );
 }
@@ -1599,5 +1597,5 @@ export default function AuthenticatedApp() {
 
   if (!user) return <LoginScreen />;
 
-  return <JobSearchTracker uid={user.uid} userEmail={user.email} />;
+  return <JobSearchTracker uid={user.id} userEmail={user.email ?? null} />;
 }

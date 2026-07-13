@@ -1,54 +1,64 @@
 import React, { useState, useEffect } from "react";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  type User,
-} from "firebase/auth";
-import { auth } from "./firebase";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "./supabase";
 import { CSS } from "./styles";
 
 type Mode = "login" | "signup";
 
 /* ---------------------------------------------------------------------
-   AUTH STATE HOOK — tracks the current Firebase user across the app.
+   AUTH STATE HOOK — tracks the current Supabase user across the app.
 --------------------------------------------------------------------- */
 export function useAuthUser(): { user: User | null; checking: boolean } {
   const [user, setUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+    let active = true;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active) return;
+      setUser(session?.user ?? null);
       setChecking(false);
     });
-    return unsub;
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setChecking(false);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return { user, checking };
 }
 
 export function signOutUser(): Promise<void> {
-  return signOut(auth);
+  return supabase.auth.signOut().then(() => undefined);
 }
 
 function friendlyAuthError(e: unknown): string {
-  const code = (e as { code?: string } | null)?.code || "";
-  switch (code) {
-    case "auth/invalid-email":
-      return "That email address doesn't look right.";
-    case "auth/user-not-found":
-    case "auth/wrong-password":
-    case "auth/invalid-credential":
-      return "Incorrect email or password.";
-    case "auth/email-already-in-use":
-      return "An account already exists with that email. Try signing in instead.";
-    case "auth/weak-password":
-      return "Password should be at least 6 characters.";
-    default:
-      return "Something went wrong. Please try again.";
+  const message = (e as { message?: string } | null)?.message || "";
+  if (/invalid login credentials/i.test(message)) {
+    return "Incorrect email or password.";
   }
+  if (/user already registered/i.test(message)) {
+    return "An account already exists with that email. Try signing in instead.";
+  }
+  if (/password should be at least/i.test(message)) {
+    return "Password should be at least 6 characters.";
+  }
+  if (/unable to validate email address|invalid.*email/i.test(message)) {
+    return "That email address doesn't look right.";
+  }
+  if (/email not confirmed/i.test(message)) {
+    return "Please confirm your email address before signing in (check your inbox).";
+  }
+  return "Something went wrong. Please try again.";
 }
 
 /* ---------------------------------------------------------------------
@@ -59,19 +69,35 @@ export function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async () => {
     setError("");
+    setNotice("");
     if (!email.trim() || !password) { setError("Enter an email and password."); return; }
     setSubmitting(true);
     try {
       if (mode === "login") {
-        await signInWithEmailAndPassword(auth, email.trim(), password);
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (signInErr) throw signInErr;
+        // onAuthStateChanged in useAuthUser picks up the signed-in user from here.
       } else {
-        await createUserWithEmailAndPassword(auth, email.trim(), password);
+        const { data, error: signUpErr } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+        });
+        if (signUpErr) throw signUpErr;
+        // If your Supabase project has "Confirm email" enabled, there will
+        // be no session yet — the user needs to click the emailed link
+        // before useAuthUser sees them as signed in.
+        if (!data.session) {
+          setNotice("Check your email to confirm your account, then sign in.");
+        }
       }
-      // onAuthStateChanged in useAuthUser picks up the signed-in user from here.
     } catch (e) {
       setError(friendlyAuthError(e));
     } finally {
@@ -115,6 +141,7 @@ export function LoginScreen() {
             </label>
 
             {error && <div className="jst-form-error jst-field-full">{error}</div>}
+            {notice && !error && <div className="jst-field-full jst-auth-notice">{notice}</div>}
 
             <div className="jst-field-full jst-auth-actions">
               <button type="button" className="jst-btn-primary" disabled={submitting} onClick={submit}>
@@ -123,7 +150,7 @@ export function LoginScreen() {
               <button
                 type="button"
                 className="jst-btn-ghost"
-                onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }}
+                onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setNotice(""); }}
               >
                 {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
               </button>
@@ -143,4 +170,5 @@ const AUTH_CSS = `
 .jst-auth-form { display: flex; flex-direction: column; gap: 14px; }
 .jst-auth-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .jst-auth-actions .jst-btn-primary, .jst-auth-actions .jst-btn-ghost { width: 100%; justify-content: center; }
+.jst-auth-notice { font-size: 13px; color: var(--ink-soft); background: var(--surface-soft, rgba(0,0,0,0.03)); border-radius: 8px; padding: 8px 10px; }
 `;
