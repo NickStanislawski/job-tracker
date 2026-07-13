@@ -367,6 +367,8 @@ ${y}`}class le extends Error{constructor({message:e,code:n,cause:r,name:s}){var 
 .jst-picker-role { font-size: 13.5px; font-weight: 500; color: var(--ink); }
 .jst-picker-company { font-size: 12px; color: var(--ink-soft); }
 
+.jst-tabbar { display: none; }
+
 /* ---------------------------------------------------------------------
    MOBILE — tablet and below
 --------------------------------------------------------------------- */
