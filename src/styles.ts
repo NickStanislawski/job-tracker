@@ -194,9 +194,73 @@ export const CSS: string = `
 .jst-mobile-menu-email { font-size: 12.5px; color: var(--ink-soft); padding: 4px 14px 6px; }
 
 /* ---------------------------------------------------------------------
+   OPS TRACKER — daily non-negotiables + weekly deliverables
+--------------------------------------------------------------------- */
+.jst-ops-headerrow { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-top: 4px; }
+.jst-ops-daynav { display: flex; align-items: center; gap: 8px; }
+.jst-ops-navbtn { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .12s; }
+.jst-ops-navbtn:hover { background: var(--bg); }
+.jst-ops-date { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 13.5px; color: var(--ink-soft); }
+.jst-ops-today-btn { border: none; background: none; padding: 0; font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600; color: var(--amber); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+
+.jst-ops-weeknav { display: flex; align-items: center; gap: 8px; }
+.jst-ops-weeknav .jst-ops-navbtn { width: 24px; height: 24px; }
+
+.jst-ops-ring-wrap { display: flex; align-items: center; gap: 12px; }
+.jst-ops-ring-label { font-size: 11.5px; color: var(--ink-soft); }
+.jst-ops-ring-status { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; margin-top: 2px; }
+
+.jst-ops-groupby { display: flex; gap: 2px; background: var(--bg); padding: 3px; border-radius: 8px; }
+.jst-ops-groupby-btn { border: none; background: transparent; padding: 6px 11px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; color: var(--ink-soft); cursor: pointer; transition: background .12s, color .12s; }
+.jst-ops-groupby-btn:hover { color: var(--ink); }
+.jst-ops-groupby-active { background: var(--ink) !important; color: #fff !important; }
+
+.jst-ops-section { margin-bottom: 6px; }
+.jst-ops-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin: 18px 0 2px; }
+.jst-ops-section:first-of-type .jst-ops-section-title { margin-top: 4px; }
+
+.jst-ops-list { display: flex; flex-direction: column; }
+.jst-ops-list-manual { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.jst-ops-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.jst-ops-row:last-child { border-bottom: none; }
+.jst-ops-row-label { font-size: 13.5px; flex: 1; min-width: 0; }
+.jst-ops-row-label-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.jst-ops-row-label small { display: block; color: var(--ink-soft); font-size: 11px; margin-top: 3px; }
+
+.jst-ops-tag { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; flex-shrink: 0; }
+.jst-ops-tag-technical { background: color-mix(in srgb, var(--amber) 16%, white); color: color-mix(in srgb, var(--amber) 70%, black); }
+.jst-ops-tag-networking { background: #E4EEEC; color: #2F6155; }
+
+.jst-ops-check { width: 26px; height: 26px; border-radius: 7px; border: 1.5px solid var(--line); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: transparent; transition: background .12s, border-color .12s, color .12s; }
+.jst-ops-check-done { background: #E4EFE7; border-color: #3F7D53; color: #3F7D53; }
+
+.jst-ops-stepper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.jst-ops-stepper button { width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.jst-ops-stepper button:hover { background: var(--line); }
+.jst-ops-count { font-family: 'IBM Plex Mono', monospace; font-size: 13px; min-width: 44px; text-align: center; }
+.jst-ops-count-met { color: #3F7D53; }
+
+.jst-ops-range { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+.jst-ops-bars { display: flex; flex-direction: column; }
+.jst-ops-bar-row { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.jst-ops-bar-row:last-child { border-bottom: none; }
+.jst-ops-bar-top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; gap: 10px; }
+.jst-ops-bar-track { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.jst-ops-bar-fill { height: 100%; background: var(--amber); border-radius: 3px; transition: width .2s; }
+.jst-ops-bar-fill-met { background: #3F7D53; }
+
+.jst-ops-callout { border: 1px solid color-mix(in srgb, var(--amber) 55%, var(--line)); background: color-mix(in srgb, var(--amber) 8%, white); }
+.jst-ops-callout-k { display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 8px; }
+.jst-ops-callout p { margin: 0; font-size: 13.5px; line-height: 1.6; }
+
+/* ---------------------------------------------------------------------
    MOBILE — tablet and below
 --------------------------------------------------------------------- */
 @media (max-width: 720px) {
+  .jst-ops-headerrow { margin-top: 12px; flex-direction: column; align-items: stretch; gap: 14px; }
+  .jst-ops-daynav { justify-content: space-between; }
+  .jst-ops-ring-wrap { justify-content: center; }
+  .jst-card-title-row { flex-wrap: wrap; }
   .jst-header { flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 16px; gap: 10px; }
   .jst-nav { display: none; }
   .jst-account { display: none; }

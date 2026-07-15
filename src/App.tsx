@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
   Plus, X, Search, Building2, User, Briefcase, Calendar, Trash2, Pencil,
   ChevronRight, LayoutDashboard, ListChecks, Users2, AlertCircle, Sparkles,
-  CheckCircle2, ClipboardEdit, Mail, Inbox, LogOut, Menu,
+  CheckCircle2, ClipboardEdit, Mail, Inbox, LogOut, Menu, Target,
 } from "lucide-react";
 import type {
   Stage, StageKey, Priority, TaskKind, TaskItem,
@@ -14,6 +14,7 @@ import type {
 import { useCloudData } from "./useCloudData";
 import { useAuthUser, LoginScreen, signOutUser } from "./AuthGate";
 import { CSS } from "./styles";
+import { OpsTracker } from "./Opstracker";
 
 /* ---------------------------------------------------------------------
    PIPELINE STAGES — order carries meaning: left-to-right is the funnel.
@@ -148,6 +149,7 @@ const makeSeedData = (): AppData => ({
   companies: seedCompanies(),
   recruiters: seedRecruiters(),
   applications: seedApplications(),
+  ops: { days: {}, weeks: {} },
 });
 
 /* ---------------------------------------------------------------------
@@ -1509,7 +1511,7 @@ function RecruitersView({
 /* ---------------------------------------------------------------------
    ROOT APP (signed-in)
 --------------------------------------------------------------------- */
-type TabKey = "dashboard" | "tasks" | "applications" | "companies" | "recruiters";
+type TabKey = "dashboard" | "ops" | "tasks" | "applications" | "companies" | "recruiters";
 
 function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string | null }) {
   const [data, setData, status] = useCloudData<AppData>(uid, makeSeedData);
@@ -1538,6 +1540,7 @@ function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string |
         </div>
         <nav className="jst-nav">
           <button className={"jst-nav-btn" + (tab === "dashboard" ? " jst-nav-active" : "")} onClick={() => selectTab("dashboard")}><LayoutDashboard size={16} /> Dashboard</button>
+          <button className={"jst-nav-btn" + (tab === "ops" ? " jst-nav-active" : "")} onClick={() => selectTab("ops")}><Target size={16} /> Ops Tracker</button>
           <button className={"jst-nav-btn" + (tab === "tasks" ? " jst-nav-active" : "")} onClick={() => selectTab("tasks")}><Inbox size={16} /> Tasks</button>
           <button className={"jst-nav-btn" + (tab === "applications" ? " jst-nav-active" : "")} onClick={() => selectTab("applications")}><ListChecks size={16} /> Applications</button>
           <button className={"jst-nav-btn" + (tab === "companies" ? " jst-nav-active" : "")} onClick={() => selectTab("companies")}><Building2 size={16} /> Companies</button>
@@ -1562,6 +1565,7 @@ function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string |
           <div className="jst-mobile-menu-backdrop" onClick={() => setMobileMenuOpen(false)} />
           <nav className="jst-mobile-menu">
             <button className={"jst-mobile-menu-btn" + (tab === "dashboard" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("dashboard")}><LayoutDashboard size={18} /> Dashboard</button>
+            <button className={"jst-mobile-menu-btn" + (tab === "ops" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("ops")}><Target size={18} /> Ops Tracker</button>
             <button className={"jst-mobile-menu-btn" + (tab === "tasks" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("tasks")}><Inbox size={18} /> Tasks</button>
             <button className={"jst-mobile-menu-btn" + (tab === "applications" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("applications")}><ListChecks size={18} /> Applications</button>
             <button className={"jst-mobile-menu-btn" + (tab === "companies" ? " jst-mobile-menu-active" : "")} onClick={() => selectTab("companies")}><Building2 size={18} /> Companies</button>
@@ -1578,6 +1582,8 @@ function JobSearchTracker({ uid, userEmail }: { uid: string; userEmail: string |
           <div className="jst-loading">Loading your tracker…</div>
         ) : tab === "dashboard" ? (
           <Dashboard applications={data.applications} companies={data.companies} recruiters={data.recruiters} setData={setData} goToApplications={goToApplications} goToTasks={goToTasks} />
+        ) : tab === "ops" ? (
+          <OpsTracker data={data} setData={setData} />
         ) : tab === "tasks" ? (
           <TasksView applications={data.applications} companies={data.companies} recruiters={data.recruiters} setData={setData} />
         ) : tab === "applications" ? (

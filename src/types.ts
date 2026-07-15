@@ -55,10 +55,48 @@ export interface Application {
   notes: string;
 }
 
+/* ---------------------------------------------------------------------
+   OPS TRACKER TYPES — daily non-negotiables + weekly deliverables.
+   Stored inside the same per-user JSON blob as everything else, keyed
+   by date (days) and by the Monday of each week (weeks), so it rides
+   along with the existing Supabase sync/realtime plumbing for free.
+--------------------------------------------------------------------- */
+export interface DailyOpsRecord {
+  projectWork: boolean;
+  documented: boolean;
+  commit: boolean;
+  applications: number;
+  messages: number;
+  comments: number;
+  // Commute review, split by focus — done passively during commute.
+  commuteTechnical: boolean;
+  commuteNetworking: boolean;
+}
+
+export interface WeeklyOpsRecord {
+  milestone: boolean;
+  docImprovement: boolean;
+  linkedinPost: boolean;
+  connections: number;
+  portfolioImprovement: boolean;
+  resumeReview: boolean;
+  trackerMaintained: boolean;
+}
+
+export interface OpsData {
+  // keyed by YYYY-MM-DD (local date)
+  days: Record<string, DailyOpsRecord>;
+  // keyed by the YYYY-MM-DD of that week's Monday
+  weeks: Record<string, WeeklyOpsRecord>;
+}
+
 export interface AppData {
   companies: Company[];
   recruiters: Recruiter[];
   applications: Application[];
+  // Optional so existing saved rows (from before this feature existed)
+  // still satisfy the type — OpsTracker falls back to empty records.
+  ops?: OpsData;
 }
 
 // Drafts are used while a record is being created/edited in a form —
