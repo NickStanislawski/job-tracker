@@ -202,6 +202,7 @@ export const CSS: string = `
 .jst-ops-navbtn:hover { background: var(--bg); }
 .jst-ops-date { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 13.5px; color: var(--ink-soft); }
 .jst-ops-today-btn { border: none; background: none; padding: 0; font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600; color: var(--amber); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.jst-ops-rest-note { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-soft); background: var(--bg); padding: 2px 8px; border-radius: 999px; }
 
 .jst-ops-weeknav { display: flex; align-items: center; gap: 8px; }
 .jst-ops-weeknav .jst-ops-navbtn { width: 24px; height: 24px; }
@@ -244,7 +245,8 @@ export const CSS: string = `
 .jst-ops-bars { display: flex; flex-direction: column; }
 .jst-ops-bar-row { padding: 9px 0; border-bottom: 1px solid var(--line); }
 .jst-ops-bar-row:last-child { border-bottom: none; }
-.jst-ops-bar-top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; gap: 10px; }
+.jst-ops-bar-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 6px; gap: 10px; }
+.jst-ops-bar-label { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .jst-ops-bar-track { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
 .jst-ops-bar-fill { height: 100%; background: var(--amber); border-radius: 3px; transition: width .2s; }
 .jst-ops-bar-fill-met { background: #3F7D53; }

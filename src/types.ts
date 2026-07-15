@@ -68,6 +68,7 @@ export interface DailyOpsRecord {
   applications: number;
   messages: number;
   comments: number;
+  connections: number;
   // Commute review, split by focus — done passively during commute.
   commuteTechnical: boolean;
   commuteNetworking: boolean;
@@ -75,12 +76,7 @@ export interface DailyOpsRecord {
 
 export interface WeeklyOpsRecord {
   milestone: boolean;
-  docImprovement: boolean;
-  linkedinPost: boolean;
-  connections: number;
-  portfolioImprovement: boolean;
-  resumeReview: boolean;
-  trackerMaintained: boolean;
+  linkedinPost: number;
 }
 
 export interface OpsData {

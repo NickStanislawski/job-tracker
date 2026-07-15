@@ -45,10 +45,11 @@ function dailyItems(techFocus: string, netFocus: string): Item<DailyOpsRecord>[]
   return [
     { key: "projectWork", label: "Project work", small: "5:00–6:30am · build", type: "check", block: "morning", category: "technical" },
     { key: "documented", label: "Document progress", small: "6:30–7:00am · README, notes, diagrams", type: "check", block: "morning", category: "technical" },
-    { key: "commit", label: "GitHub commit", small: "meaningful, not volume", type: "check", block: "morning", category: "technical" },
+    // { key: "commit", label: "GitHub commit", small: "meaningful, not volume", type: "check", block: "morning", category: "technical" },
     { key: "commuteTechnical", label: "Commute review — technical", small: `Security concepts · ${techFocus}`, type: "check", block: "day", category: "technical" },
     { key: "messages", label: "Recruiter / network messages", small: "30-min block · target 2", type: "counter", target: 2, block: "day", category: "networking" },
     { key: "comments", label: "LinkedIn comments", small: "30-min block · target 5", type: "counter", target: 5, block: "day", category: "networking" },
+    { key: "connections", label: "New connections", small: "30-min block · target 2", type: "counter", target: 2, block: "day", category: "networking" },
     { key: "commuteNetworking", label: "Commute review — networking", small: `Interview delivery · ${netFocus}`, type: "check", block: "day", category: "networking" },
     { key: "applications", label: "Applications", small: "8–9pm · quality over volume, target 5", type: "counter", target: 5, block: "evening", category: "networking" },
   ];
@@ -56,12 +57,7 @@ function dailyItems(techFocus: string, netFocus: string): Item<DailyOpsRecord>[]
 
 const WEEK_ITEMS: (Item<WeeklyOpsRecord> & { category: OpsCategory })[] = [
   { key: "milestone", label: "Project milestone completed", type: "check", block: "morning", category: "technical" },
-  { key: "docImprovement", label: "Documentation improvement", type: "check", block: "morning", category: "technical" },
-  { key: "portfolioImprovement", label: "Portfolio improvement", type: "check", block: "morning", category: "technical" },
-  { key: "linkedinPost", label: "LinkedIn post", type: "check", block: "day", category: "networking" },
-  { key: "connections", label: "New connections", type: "counter", target: 12, block: "day", category: "networking" },
-  { key: "resumeReview", label: "Resume: review 5 job descriptions", type: "check", block: "evening", category: "networking" },
-  { key: "trackerMaintained", label: "Application tracker maintained", type: "check", block: "evening", category: "networking" },
+  { key: "linkedinPost", label: "LinkedIn posts", small: "target 2 this week", type: "counter", target: 2, block: "day", category: "networking" },
 ];
 
 /* ---------------------------------------------------------------------
@@ -82,12 +78,11 @@ function sameDay(a: Date, b: Date): boolean { return fmtDateKey(a) === fmtDateKe
 
 const emptyDaily = (): DailyOpsRecord => ({
   projectWork: false, documented: false, commit: false,
-  applications: 0, messages: 0, comments: 0,
+  applications: 0, messages: 0, comments: 0, connections: 0,
   commuteTechnical: false, commuteNetworking: false,
 });
 const emptyWeekly = (): WeeklyOpsRecord => ({
-  milestone: false, docImprovement: false, linkedinPost: false,
-  connections: 0, portfolioImprovement: false, resumeReview: false, trackerMaintained: false,
+  milestone: false, linkedinPost: 0,
 });
 
 function isComplete<T>(item: { type: "check" | "counter"; target?: number }, value: number | boolean): boolean {
@@ -156,27 +151,35 @@ export function OpsTracker({ data, setData }: { data: AppData; setData: SetData 
 
   const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
   const isToday = sameDay(viewedDate, today);
-  const dayKey = fmtDateKey(viewedDate);
   const monday = useMemo(() => mondayOf(viewedDate), [viewedDate]);
   const sunday = useMemo(() => addDays(monday, 6), [monday]);
+  const saturday = useMemo(() => addDays(monday, 5), [monday]);
   const mondayKey = fmtDateKey(monday);
+
+  const dow = viewedDate.getDay();
+  const isWeekend = dow === 0 || dow === 6;
+  // Saturday and Sunday share one record — check some Saturday, finish
+  // Sunday, same checklist either day.
+  const dayKey = isWeekend ? "weekend-" + fmtDateKey(saturday) : fmtDateKey(viewedDate);
 
   const techFocus = COMMUTE_TECHNICAL_FOCUS[viewedDate.getDay()];
   const netFocus = COMMUTE_NETWORKING_FOCUS[viewedDate.getDay()];
   const DAILY_ITEMS = useMemo(() => dailyItems(techFocus, netFocus), [techFocus, netFocus]);
+  // Full checklist Monday–Friday; the shared weekend record only needs
+  // 1 item done to count as "on track" — flexibility on weekends, not a
+  // hidden section.
 
   const daily = data.ops?.days?.[dayKey] ?? emptyDaily();
   const weekManual = data.ops?.weeks?.[mondayKey] ?? emptyWeekly();
 
   const weekDailyRecords = useMemo(() => {
     const days = data.ops?.days ?? {};
-    return Object.entries(days)
-      .filter(([key]) => {
-        const dt = new Date(key + "T00:00:00");
-        return dt >= monday && dt <= sunday;
-      })
-      .map(([, rec]) => rec);
-  }, [data.ops, monday, sunday]);
+    // Explicit keys for this week: Mon–Fri by date, plus the one shared
+    // weekend record — avoids double-counting Sat/Sun as two records.
+    const keys = [0, 1, 2, 3, 4].map((i) => fmtDateKey(addDays(monday, i)));
+    keys.push("weekend-" + fmtDateKey(saturday));
+    return keys.map((k) => days[k]).filter((r): r is DailyOpsRecord => !!r);
+  }, [data.ops, monday, saturday]);
 
   const updateDaily = (key: keyof DailyOpsRecord, value: boolean | number) => {
     setData((d) => {
@@ -196,7 +199,8 @@ export function OpsTracker({ data, setData }: { data: AppData; setData: SetData 
   };
 
   const completedCount = DAILY_ITEMS.filter((item) => isComplete(item, daily[item.key])).length;
-  const pct = completedCount / DAILY_ITEMS.length;
+  const requiredCount = isWeekend ? 1 : DAILY_ITEMS.length;
+  const pct = Math.min(1, completedCount / requiredCount);
   const circumference = 150.8;
   const offset = circumference * (1 - pct);
   const ringColor = pct >= 1 ? "#3F7D53" : pct >= 0.55 ? "#D9A441" : "#C1584A";
@@ -208,24 +212,29 @@ export function OpsTracker({ data, setData }: { data: AppData; setData: SetData 
       applications: acc.applications + (r.applications || 0),
       messages: acc.messages + (r.messages || 0),
       comments: acc.comments + (r.comments || 0),
+      connections: acc.connections + (r.connections || 0),
       commuteTechDays: acc.commuteTechDays + (r.commuteTechnical ? 1 : 0),
       commuteNetDays: acc.commuteNetDays + (r.commuteNetworking ? 1 : 0),
     }),
-    { commit: 0, applications: 0, messages: 0, comments: 0, commuteTechDays: 0, commuteNetDays: 0 }
+    { commit: 0, applications: 0, messages: 0, comments: 0, connections: 0, commuteTechDays: 0, commuteNetDays: 0 }
   );
 
-  const weekMetrics: { label: string; value: number; target: number; fmt: (v: number) => string }[] = [
-    { label: "GitHub commits", value: weekSums.commit, target: 6, fmt: (v) => String(v) },
-    { label: "Applications", value: weekSums.applications, target: 30, fmt: (v) => String(v) },
-    { label: "Recruiter / network messages", value: weekSums.messages, target: 12, fmt: (v) => String(v) },
-    { label: "LinkedIn comments", value: weekSums.comments, target: 30, fmt: (v) => String(v) },
-    { label: "Commute review — technical", value: weekSums.commuteTechDays, target: 5, fmt: (v) => v + " days" },
-    { label: "Commute review — networking", value: weekSums.commuteNetDays, target: 5, fmt: (v) => v + " days" },
+  const weekMetrics: { label: string; value: number; target: number; fmt: (v: number) => string; category: OpsCategory }[] = [
+    // { label: "GitHub commits", value: weekSums.commit, target: 6, fmt: (v) => String(v), category: "technical" },
+    { label: "Commute review — technical", value: weekSums.commuteTechDays, target: 5, fmt: (v) => v + " days", category: "technical" },
+    { label: "Applications", value: weekSums.applications, target: 30, fmt: (v) => String(v), category: "networking" },
+    { label: "Recruiter / network messages", value: weekSums.messages, target: 12, fmt: (v) => String(v), category: "networking" },
+    { label: "LinkedIn comments", value: weekSums.comments, target: 30, fmt: (v) => String(v), category: "networking" },
+    { label: "New connections", value: weekSums.connections, target: 12, fmt: (v) => String(v), category: "networking" },
+    { label: "Commute review — networking", value: weekSums.commuteNetDays, target: 5, fmt: (v) => v + " days", category: "networking" },
   ];
 
   const dateLabel = isToday
     ? "Today · " + viewedDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
     : viewedDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  const restNote = isWeekend
+    ? "Weekend checklist — shared with " + (dow === 6 ? "Sunday" : "Saturday") + ", just 1 item needed"
+    : null;
   const rangeLabel =
     monday.toLocaleDateString(undefined, { month: "short", day: "numeric" }) +
     "  –  " +
@@ -258,6 +267,7 @@ export function OpsTracker({ data, setData }: { data: AppData; setData: SetData 
             </button>
             <div className="jst-ops-date">
               {dateLabel}
+              {restNote && <span className="jst-ops-rest-note">{restNote}</span>}
               {!isToday && (
                 <button type="button" className="jst-ops-today-btn" onClick={() => setViewedDate(today)}>
                   Jump to today
@@ -336,6 +346,19 @@ export function OpsTracker({ data, setData }: { data: AppData; setData: SetData 
             </button>
           </div>
         </div>
+
+         <div className="jst-ops-list jst-ops-list-manual">
+          {WEEK_ITEMS.map((item) => (
+            <ChecklistRow
+              key={String(item.key)}
+              item={item}
+              value={weekManual[item.key]}
+              onToggle={() => updateWeekly(item.key, !weekManual[item.key])}
+              onStep={(delta) => updateWeekly(item.key, Math.max(0, (weekManual[item.key] as number) + delta))}
+            />
+          ))}
+        </div>
+
         <div className="jst-ops-bars">
           {weekMetrics.map((m) => {
             const met = m.value >= m.target;
@@ -343,7 +366,10 @@ export function OpsTracker({ data, setData }: { data: AppData; setData: SetData 
             return (
               <div className="jst-ops-bar-row" key={m.label}>
                 <div className="jst-ops-bar-top">
-                  <span>{m.label}</span>
+                  <span className="jst-ops-bar-label">
+                    {m.label}
+                    <Tag tone={m.category}>{CATEGORY_LABEL[m.category]}</Tag>
+                  </span>
                   <span className={"jst-mono" + (met ? " jst-ops-count-met" : "")}>
                     {m.fmt(m.value)} / {m.fmt(m.target)}
                   </span>
@@ -356,22 +382,11 @@ export function OpsTracker({ data, setData }: { data: AppData; setData: SetData 
           })}
         </div>
 
-        <div className="jst-ops-list jst-ops-list-manual">
-          {WEEK_ITEMS.map((item) => (
-            <ChecklistRow
-              key={String(item.key)}
-              item={item}
-              value={weekManual[item.key]}
-              onToggle={() => updateWeekly(item.key, !weekManual[item.key])}
-              onStep={(delta) => updateWeekly(item.key, Math.max(0, (weekManual[item.key] as number) + delta))}
-            />
-          ))}
-        </div>
       </div>
 
       <div className="jst-card jst-ops-callout">
         <span className="jst-ops-callout-k"><Sparkles size={13} /> Biggest win condition</span>
-        <p>One portfolio improvement, one project milestone, and enough applications to keep interviews flowing. Everything else supports those three.</p>
+        <p>One project milestone, steady LinkedIn visibility, and enough applications to keep interviews flowing. Everything else supports those three.</p>
       </div>
     </div>
   );
